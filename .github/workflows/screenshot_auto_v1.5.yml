@@ -1,0 +1,55 @@
+name: Hourly Screenshot
+
+on:
+  schedule:
+    - cron: '10 * * * *'
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  screenshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install dependencies
+        run: |
+          # 检查是否存在 package.json，不存在则创建
+          if [ ! -f package.json ]; then
+            echo '{"dependencies": {"puppeteer": "^22.0.0"}}' > package.json
+          fi
+          npm install
+
+      - name: Install System Dependencies (Ubuntu 24.04 Fix)
+        run: |
+          sudo apt-get update
+          # 注意：libasound2 改为了 libasound2t64，删除了不存在的 libcomposite1
+          sudo apt-get install -y \
+            libgbm-dev \
+            libnss3 \
+            libatk-bridge2.0-0 \
+            libxkbcommon0 \
+            libxdamage1 \
+            libpango-1.0-0 \
+            libasound2t64 \
+            libcups2
+          
+          # 让 Puppeteer 下载对应的 Chrome
+          npx puppeteer browsers install chrome
+
+      - name: Run screenshot script
+        run: node screenshot.js
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots-${{ github.run_number }}
+          path: "*.png"
