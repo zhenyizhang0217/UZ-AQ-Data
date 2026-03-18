@@ -2,23 +2,31 @@ name: Hourly Screenshot
 
 on:
   schedule:
-    - cron: '10 * * * *'  # 每小时第10分钟运行
-  workflow_dispatch:
+    - cron: '10 * * * *' 
+  workflow_dispatch:    
 
 jobs:
   screenshot:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm install
+
+      - name: Install Browser and System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgbm-dev libnss3 libatk-bridge2.0-0 libxkbcommon0 libcomposite1 libasound2
+          npx puppeteer browsers install chrome
 
       - name: Run screenshot script
         run: node screenshot.js
@@ -27,5 +35,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: screenshots
-          path: '*.png'
-
+          path: "*.png"
+          retention-days: 7 # 自动清理，节省空间
