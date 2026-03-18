@@ -12,14 +12,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4 # 建议用 v4，v5 尚未完全普及
+      - uses: actions/checkout@v4 
 
-      - name: Use Node.js 24
-        uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
         with:
-          node-version: '24.x'
-          # 如果报错找不到 lock 文件，就把下面这行删掉
-          # cache: 'npm'
+          node-version: '24.x'  
 
       - name: Install Dependencies
         run: |
