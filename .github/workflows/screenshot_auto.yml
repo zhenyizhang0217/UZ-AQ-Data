@@ -5,26 +5,29 @@ on:
     - cron: '10 * * * *'
   workflow_dispatch:
 
+# 设置全局环境变量，解决 Node 24 警告问题
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   screenshot:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4 # 升级到 v4
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4 
+        uses: actions/setup-node@v4
         with:
-          node-version: '24'
-
+          node-version: '24' # 升级到最新的 Node 24
+          # 如果你仓库里没有 package-lock.json，请务必删除下面这一行代码：
+          # cache: 'npm' 
 
       - name: Install dependencies
-        run: npm install
-
-      - name: Install Browser and Dependencies
-        # 必须安装浏览器和对应的系统库
         run: |
+          npm install
+          # 安装浏览器及其依赖库
           sudo apt-get update
           sudo apt-get install -y libgbm-dev libnss3 libatk-bridge2.0-0 libxkbcommon0 libcomposite1 libasound2
           npx puppeteer browsers install chrome
@@ -33,8 +36,8 @@ jobs:
         run: node screenshot.js
 
       - name: Upload screenshots
-        uses: actions/upload-artifact@v4 
+        uses: actions/upload-artifact@v4
         with:
-          name: hourly-screenshots
+          name: screenshots-${{ github.run_number }}
           path: "*.png"
-          if-no-files-found: error 
+          if-no-files-found: error
