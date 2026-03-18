@@ -1,16 +1,20 @@
-name: Hourly Screenshot
+name: Hourly Screenshot to Repo
 
 on:
   schedule:
-    - cron: '0 * * * *'
+    - cron: '10 * * * *'
   workflow_dispatch:
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+# 重要：授予 Actions 提交代码的权限
+permissions:
+  contents: write
 
 jobs:
   screenshot:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -22,34 +26,21 @@ jobs:
 
       - name: Install dependencies
         run: |
-          # 检查是否存在 package.json，不存在则创建
           if [ ! -f package.json ]; then
             echo '{"dependencies": {"puppeteer": "^22.0.0"}}' > package.json
           fi
           npm install
-
-      - name: Install System Dependencies (Ubuntu 24.04 Fix)
-        run: |
           sudo apt-get update
-          # 注意：libasound2 改为了 libasound2t64，删除了不存在的 libcomposite1
-          sudo apt-get install -y \
-            libgbm-dev \
-            libnss3 \
-            libatk-bridge2.0-0 \
-            libxkbcommon0 \
-            libxdamage1 \
-            libpango-1.0-0 \
-            libasound2t64 \
-            libcups2
-          
-          # 让 Puppeteer 下载对应的 Chrome
+          sudo apt-get install -y libgbm-dev libnss3 libatk-bridge2.0-0 libxkbcommon0 libxdamage1 libpango-1.0-0 libasound2t64 libcups2
           npx puppeteer browsers install chrome
 
       - name: Run screenshot script
         run: node screenshot.js
 
-      - name: Upload screenshots
-        uses: actions/upload-artifact@v4
-        with:
-          name: screenshots-${{ github.run_number }}
-          path: "*.png"
+      - name: Commit and Push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add screenshots/*.png
+          # 只有在有新文件时才提交，防止报错
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Add hourly screenshot $(date +'%Y-%m-%d %H:%M')" && git push)
