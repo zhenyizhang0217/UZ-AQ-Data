@@ -1,0 +1,11 @@
+{
+  "name": "hourly-screenshot",
+  "version": "1.0.0",
+  "main": "screenshot.js",
+  "scripts": {
+    "start": "node screenshot.js"
+  },
+  "dependencies": {
+    "puppeteer": "^24.1.1"
+  }
+}
