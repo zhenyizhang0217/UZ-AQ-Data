@@ -2,8 +2,8 @@ name: Hourly Screenshot
 
 on:
   schedule:
-    - cron: '10 * * * *'  # 每小时第0分钟运行
-  workflow_dispatch:   # 手动触发也可以
+    - cron: '10 * * * *'  # 每小时第10分钟运行
+  workflow_dispatch:
 
 jobs:
   screenshot:
@@ -28,3 +28,4 @@ jobs:
         with:
           name: screenshots
           path: '*.png'
+
