@@ -1,0 +1,39 @@
+name: Hourly Screenshot
+
+on:
+  push:
+    branches: [ "main" ]
+  schedule:
+    - cron: '10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4 # 建议用 v4，v5 尚未完全普及
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.x'
+
+      - name: Install Dependencies
+        run: |
+          npm install
+          # 核心步骤：安装运行浏览器所需的系统库
+          sudo apt-get update
+          sudo apt-get install -y libgbm-dev libnss3 libatk-bridge2.0-0 libxkbcommon0 libcomposite1 libasound2
+          npx puppeteer browsers install chrome
+
+      - name: Run Screenshot Script
+        # 执行你的截图脚本，而不是运行测试
+        run: node screenshot.js
+
+      - name: Upload Screenshot Artifact
+        # 必须加这一步，否则你拿不到图片
+        uses: actions/upload-artifact@v4
+        with:
+          name: meteo-screenshots
+          path: ./*.png
